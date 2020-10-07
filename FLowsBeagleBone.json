@@ -1,0 +1,1288 @@
+[
+    {
+        "id": "5bea1d99.7fbfc4",
+        "type": "tab",
+        "label": "Flow 2",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "cd238d68.8a365",
+        "type": "debug",
+        "z": "5bea1d99.7fbfc4",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": true,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 2170,
+        "y": 680,
+        "wires": []
+    },
+    {
+        "id": "4a9bb04d.98f88",
+        "type": "inject",
+        "z": "5bea1d99.7fbfc4",
+        "name": "Identificar SmartPlugs Na rede",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 630,
+        "y": 240,
+        "wires": [
+            [
+                "2754cc6a.1815c4"
+            ]
+        ]
+    },
+    {
+        "id": "20bc01c2.91ae1e",
+        "type": "serial request",
+        "z": "5bea1d99.7fbfc4",
+        "name": "",
+        "serial": "c850423b.b13c1",
+        "x": 1130,
+        "y": 240,
+        "wires": [
+            [
+                "a28c3b27.484518"
+            ]
+        ]
+    },
+    {
+        "id": "2754cc6a.1815c4",
+        "type": "function",
+        "z": "5bea1d99.7fbfc4",
+        "name": "IdentificarSP",
+        "func": "if(msg.ended === true){\n}else{\n    SeqS = global.get(\"SeqS\");\n    if (SeqS === undefined){\n        SeqS = 0;\n    }\n    SeqS += 1;\n    \n    payload=Buffer.alloc(5)       \n    payload[0] = 0x01;\n    payload[1] = 0x01;\n    payload[2] = 0x00;\n    payload[3] = SeqS;\n    pld = Buffer.from([0x01,0xff,0xff,0xff,0xff])\n    \n    payload[4] = pld.length;\n    CompleteMsg = Buffer.concat([payload,pld],payload.length + pld.length+2)\n    cs = 0;\n    for (var element of CompleteMsg){\n        cs = cs + element;\n    }\n    CompleteMsg[payload.length + pld.length+0] = cs\n    CompleteMsg[payload.length + pld.length+1] = 0x04;\n    msg.payload = CompleteMsg\n    global.set(\"SeqS\",SeqS)\n    return msg;\n    \n}\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 910,
+        "y": 240,
+        "wires": [
+            [
+                "20bc01c2.91ae1e"
+            ]
+        ]
+    },
+    {
+        "id": "1eeca4f5.65820b",
+        "type": "inject",
+        "z": "5bea1d99.7fbfc4",
+        "name": "Associar ID ao Smartplug",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "b_id",
+                "v": "10",
+                "vt": "str"
+            },
+            {
+                "p": "SP1",
+                "v": "0x43",
+                "vt": "str"
+            },
+            {
+                "p": "SP2",
+                "v": "0xff",
+                "vt": "str"
+            },
+            {
+                "p": "SP3",
+                "v": "0xff",
+                "vt": "str"
+            },
+            {
+                "p": "SP4",
+                "v": "0xff",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 650,
+        "y": 520,
+        "wires": [
+            [
+                "117a3052.0b5ec"
+            ]
+        ]
+    },
+    {
+        "id": "117a3052.0b5ec",
+        "type": "function",
+        "z": "5bea1d99.7fbfc4",
+        "name": "AsoociarIDSP",
+        "func": "SeqS = global.get(\"SeqS\");\nif (SeqS === undefined || SeqS==99){\n    SeqS = 0;\n}\n\nSeqS += 1;\n\npayload=Buffer.alloc(5)       \npayload[0] = 0x01;\npayload[1] = 0x01;\npayload[2] = 0x00;\npayload[3] = SeqS;\nserials = global.get(\"serials\")\npld = Buffer.from([0x02,msg.b_id,msg.SP1,msg.SP2,msg.SP3,msg.SP4])\n\npayload[4] = pld.length;\nCompleteMsg = Buffer.concat([payload,pld],payload.length + pld.length+2)\ncs = 0;\nfor (var element of CompleteMsg){\n    cs = cs + element;\n}\nCompleteMsg[payload.length + pld.length] = cs\nCompleteMsg[payload.length + pld.length+1] = 0x04;\nmsg.payload = CompleteMsg\nmsg.sended = CompleteMsg\nglobal.set(\"SeqS\",SeqS)\nreturn msg;\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 900,
+        "y": 520,
+        "wires": [
+            [
+                "940d6abb.7af6a8"
+            ]
+        ]
+    },
+    {
+        "id": "940d6abb.7af6a8",
+        "type": "serial request",
+        "z": "5bea1d99.7fbfc4",
+        "name": "",
+        "serial": "c850423b.b13c1",
+        "x": 1130,
+        "y": 520,
+        "wires": [
+            [
+                "7aa4f134.e3bcc"
+            ]
+        ]
+    },
+    {
+        "id": "4232bbcf.182384",
+        "type": "inject",
+        "z": "5bea1d99.7fbfc4",
+        "name": "DesAssociar ID",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "b_id",
+                "v": "10",
+                "vt": "str"
+            },
+            {
+                "p": "SP1",
+                "v": "0x43",
+                "vt": "str"
+            },
+            {
+                "p": "SP2",
+                "v": "0xff",
+                "vt": "str"
+            },
+            {
+                "p": "SP3",
+                "v": "0xff",
+                "vt": "str"
+            },
+            {
+                "p": "SP4",
+                "v": "0xff",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 700,
+        "y": 600,
+        "wires": [
+            [
+                "83293a2.79adec8"
+            ]
+        ]
+    },
+    {
+        "id": "83293a2.79adec8",
+        "type": "function",
+        "z": "5bea1d99.7fbfc4",
+        "name": "Desassociar ID SP",
+        "func": "SeqS = global.get(\"SeqS\");\nif (SeqS === undefined || Seqs==99){\n    SeqS = 0;\n}\nSeqS += 1;\n\npayload=Buffer.alloc(5)       \npayload[0] = 0x01;\npayload[1] = 0x01;\npayload[2] = 0x00;\npayload[3] = SeqS;\n\npld = Buffer.from([0x03,msg.b_id])\n\npayload[4] = pld.length;\nCompleteMsg = Buffer.concat([payload,pld],payload.length + pld.length+2)\ncs = 0;\nfor (var element of CompleteMsg){\n    cs = cs + element;\n}\nCompleteMsg[payload.length + pld.length] = cs\nCompleteMsg[payload.length + pld.length+1] = 0x04;\nmsg.payload = CompleteMsg\nglobal.set(\"SeqS\",SeqS)\nreturn msg;\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 930,
+        "y": 600,
+        "wires": [
+            [
+                "85def5dc.114a18"
+            ]
+        ]
+    },
+    {
+        "id": "85def5dc.114a18",
+        "type": "serial request",
+        "z": "5bea1d99.7fbfc4",
+        "name": "",
+        "serial": "c850423b.b13c1",
+        "x": 1130,
+        "y": 600,
+        "wires": [
+            [
+                "20eb93f3.b72dec"
+            ]
+        ]
+    },
+    {
+        "id": "245e9916.bc8cb6",
+        "type": "inject",
+        "z": "5bea1d99.7fbfc4",
+        "name": "Ativar Smartplug",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "b_id",
+                "v": "0",
+                "vt": "str"
+            },
+            {
+                "p": "SP1",
+                "v": "0x43",
+                "vt": "str"
+            },
+            {
+                "p": "SP2",
+                "v": "0xff",
+                "vt": "str"
+            },
+            {
+                "p": "SP3",
+                "v": "0xff",
+                "vt": "str"
+            },
+            {
+                "p": "SP4",
+                "v": "0xff",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 700,
+        "y": 680,
+        "wires": [
+            [
+                "58e7a6ec.b1adb8"
+            ]
+        ]
+    },
+    {
+        "id": "58e7a6ec.b1adb8",
+        "type": "function",
+        "z": "5bea1d99.7fbfc4",
+        "name": "AtivarSP",
+        "func": "SeqS = global.get(\"SeqS\");\nif (SeqS === undefined || SeqS==99){\n    SeqS = 0;\n}\nSeqS += 1;\n\npayload=Buffer.alloc(5)       \npayload[0] = 0x01;\npayload[1] = 0x01;\npayload[2] = 0x00;\npayload[3] = SeqS;\n\npld = Buffer.from([0x04,msg.b_id])\n\npayload[4] = pld.length;\nCompleteMsg = Buffer.concat([payload,pld],payload.length + pld.length+2)\ncs = 0;\nfor (var element of CompleteMsg){\n    cs = cs + element;\n}\nCompleteMsg[payload.length + pld.length] = cs\nCompleteMsg[payload.length + pld.length+1] = 0x04;\nmsg.payload = CompleteMsg\nglobal.set(\"SeqS\",SeqS)\nreturn msg;\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 940,
+        "y": 680,
+        "wires": [
+            [
+                "57360015.01e21"
+            ]
+        ]
+    },
+    {
+        "id": "57360015.01e21",
+        "type": "serial request",
+        "z": "5bea1d99.7fbfc4",
+        "name": "",
+        "serial": "c850423b.b13c1",
+        "x": 1130,
+        "y": 680,
+        "wires": [
+            [
+                "20eb93f3.b72dec"
+            ]
+        ]
+    },
+    {
+        "id": "514ad94c.a82e28",
+        "type": "inject",
+        "z": "5bea1d99.7fbfc4",
+        "name": "Ler Os Dados de Medicao Smartplug",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "b_id",
+                "v": "0",
+                "vt": "num"
+            },
+            {
+                "p": "SP1",
+                "v": "0x43",
+                "vt": "str"
+            },
+            {
+                "p": "SP2",
+                "v": "0xff",
+                "vt": "num"
+            },
+            {
+                "p": "SP3",
+                "v": "0xff",
+                "vt": "num"
+            },
+            {
+                "p": "SP4",
+                "v": "0xff",
+                "vt": "num"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 580,
+        "y": 320,
+        "wires": [
+            [
+                "df79322d.10807"
+            ]
+        ]
+    },
+    {
+        "id": "df79322d.10807",
+        "type": "function",
+        "z": "5bea1d99.7fbfc4",
+        "name": "LerSP",
+        "func": "SeqS = global.get(\"SeqS\");\nif (SeqS === undefined || SeqS==99){\n    SeqS = 0;\n}\nSeqS += 1;\n\npayload=Buffer.alloc(5)       \npayload[0] = 0x01;\npayload[1] = 0x01;\npayload[2] = 0x00;\npayload[3] = SeqS;\n\npld = Buffer.from([0x05,msg.b_id])\n\npayload[4] = pld.length;\nCompleteMsg = Buffer.concat([payload,pld],payload.length + pld.length+2)\ncs = 0;\nfor (var element of CompleteMsg){\n    cs = cs + element;\n}\nCompleteMsg[payload.length + pld.length] = cs\nCompleteMsg[payload.length + pld.length+1] = 0x04;\nmsg.payload = CompleteMsg\nglobal.set(\"SeqS\",SeqS)\nreturn msg;\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 830,
+        "y": 320,
+        "wires": [
+            [
+                "8398d81b.d34fc8"
+            ]
+        ]
+    },
+    {
+        "id": "8398d81b.d34fc8",
+        "type": "serial request",
+        "z": "5bea1d99.7fbfc4",
+        "name": "",
+        "serial": "c850423b.b13c1",
+        "x": 990,
+        "y": 320,
+        "wires": [
+            [
+                "cbf323bf.6b9d2"
+            ]
+        ]
+    },
+    {
+        "id": "2bfbf897.f662c8",
+        "type": "inject",
+        "z": "5bea1d99.7fbfc4",
+        "name": "Resetar Acumulador de Energia",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "b_id",
+                "v": "10",
+                "vt": "str"
+            },
+            {
+                "p": "SP1",
+                "v": "0x43",
+                "vt": "str"
+            },
+            {
+                "p": "SP2",
+                "v": "0xff",
+                "vt": "str"
+            },
+            {
+                "p": "SP3",
+                "v": "0xff",
+                "vt": "str"
+            },
+            {
+                "p": "SP4",
+                "v": "0xff",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 650,
+        "y": 760,
+        "wires": [
+            [
+                "480eced7.197f8"
+            ]
+        ]
+    },
+    {
+        "id": "480eced7.197f8",
+        "type": "function",
+        "z": "5bea1d99.7fbfc4",
+        "name": "ResetarAcumulador",
+        "func": "SeqS = global.get(\"SeqS\");\nif (SeqS === undefined || Seqs==99){\n    SeqS = 0;\n}\nSeqS += 1;\n\npayload=Buffer.alloc(5)       \npayload[0] = 0x01;\npayload[1] = 0x01;\npayload[2] = 0x00;\npayload[3] = SeqS;\n\npld = Buffer.from([0x06,msg.b_id])\n\npayload[4] = pld.length;\nCompleteMsg = Buffer.concat([payload,pld],payload.length + pld.length+2)\ncs = 0;\nfor (var element of CompleteMsg){\n    cs = cs + element;\n}\nCompleteMsg[payload.length + pld.length] = cs\nCompleteMsg[payload.length + pld.length+1] = 0x04;\nmsg.payload = CompleteMsg\nreturn msg;\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 920,
+        "y": 760,
+        "wires": [
+            [
+                "471d9c4a.8a1a24"
+            ]
+        ]
+    },
+    {
+        "id": "471d9c4a.8a1a24",
+        "type": "serial request",
+        "z": "5bea1d99.7fbfc4",
+        "name": "",
+        "serial": "c850423b.b13c1",
+        "x": 1130,
+        "y": 760,
+        "wires": [
+            [
+                "20eb93f3.b72dec"
+            ]
+        ]
+    },
+    {
+        "id": "c6daae67.b0423",
+        "type": "inject",
+        "z": "5bea1d99.7fbfc4",
+        "name": "Pausar Acumulador de Energia",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "b_id",
+                "v": "10",
+                "vt": "str"
+            },
+            {
+                "p": "SP1",
+                "v": "0x43",
+                "vt": "str"
+            },
+            {
+                "p": "SP2",
+                "v": "0xff",
+                "vt": "str"
+            },
+            {
+                "p": "SP3",
+                "v": "0xff",
+                "vt": "str"
+            },
+            {
+                "p": "SP4",
+                "v": "0xff",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 650,
+        "y": 860,
+        "wires": [
+            [
+                "fb2548b.23dbbb8"
+            ]
+        ]
+    },
+    {
+        "id": "fb2548b.23dbbb8",
+        "type": "function",
+        "z": "5bea1d99.7fbfc4",
+        "name": "PusarAcumulador",
+        "func": "SeqS = global.get(\"SeqS\");\nif (SeqS === undefined || Seqs==99){\n    SeqS = 0;\n}\nSeqS += 1;\n\npayload=Buffer.alloc(5)       \npayload[0] = 0x01;\npayload[1] = 0x01;\npayload[2] = 0x00;\npayload[3] = SeqS;\n\npld = Buffer.from([0x07,msg.b_id])\n\npayload[4] = pld.length;\nCompleteMsg = Buffer.concat([payload,pld],payload.length + pld.length+2)\ncs = 0;\nfor (var element of CompleteMsg){\n    cs = cs + element;\n}\nCompleteMsg[payload.length + pld.length] = cs\nCompleteMsg[payload.length + pld.length+1] = 0x04;\nmsg.payload = CompleteMsg\nreturn msg;\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 910,
+        "y": 860,
+        "wires": [
+            [
+                "4cc78b0c.116314"
+            ]
+        ]
+    },
+    {
+        "id": "4cc78b0c.116314",
+        "type": "serial request",
+        "z": "5bea1d99.7fbfc4",
+        "name": "",
+        "serial": "c850423b.b13c1",
+        "x": 1130,
+        "y": 860,
+        "wires": [
+            [
+                "20eb93f3.b72dec"
+            ]
+        ]
+    },
+    {
+        "id": "ee12d495.d26838",
+        "type": "inject",
+        "z": "5bea1d99.7fbfc4",
+        "name": "Continuar Acumulador de Energia",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "b_id",
+                "v": "10",
+                "vt": "str"
+            },
+            {
+                "p": "SP1",
+                "v": "0x43",
+                "vt": "str"
+            },
+            {
+                "p": "SP2",
+                "v": "0xff",
+                "vt": "str"
+            },
+            {
+                "p": "SP3",
+                "v": "0xff",
+                "vt": "str"
+            },
+            {
+                "p": "SP4",
+                "v": "0xff",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 650,
+        "y": 960,
+        "wires": [
+            [
+                "bd5b832e.bebad"
+            ]
+        ]
+    },
+    {
+        "id": "bd5b832e.bebad",
+        "type": "function",
+        "z": "5bea1d99.7fbfc4",
+        "name": "ContinuarAcumulador",
+        "func": "SeqS = global.get(\"SeqS\");\nif (SeqS === undefined || Seqs==99){\n    SeqS = 0;\n}\nSeqS += 1;\n\npayload=Buffer.alloc(5)       \npayload[0] = 0x01;\npayload[1] = 0x00;\npayload[2] = 0x01;\npayload[3] = SeqS;\n\npld = Buffer.from([0x08,msg.b_id])\n\npayload[4] = pld.length;\nCompleteMsg = Buffer.concat([payload,pld],payload.length + pld.length+2)\ncs = 0;\nfor (var element of CompleteMsg){\n    cs = cs + element;\n}\nCompleteMsg[payload.length + pld.length] = cs\nCompleteMsg[payload.length + pld.length+1] = 0x04;\nmsg.payload = CompleteMsg\nreturn msg;\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 920,
+        "y": 960,
+        "wires": [
+            [
+                "21e074e6.30352c"
+            ]
+        ]
+    },
+    {
+        "id": "21e074e6.30352c",
+        "type": "serial request",
+        "z": "5bea1d99.7fbfc4",
+        "name": "",
+        "serial": "c850423b.b13c1",
+        "x": 1130,
+        "y": 960,
+        "wires": [
+            [
+                "20eb93f3.b72dec"
+            ]
+        ]
+    },
+    {
+        "id": "fbbab7de.803738",
+        "type": "inject",
+        "z": "5bea1d99.7fbfc4",
+        "name": "Ligar Rele",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "b_id",
+                "v": "10",
+                "vt": "str"
+            },
+            {
+                "p": "SP1",
+                "v": "0x43",
+                "vt": "str"
+            },
+            {
+                "p": "SP2",
+                "v": "0xff",
+                "vt": "str"
+            },
+            {
+                "p": "SP3",
+                "v": "0xff",
+                "vt": "str"
+            },
+            {
+                "p": "SP4",
+                "v": "0xff",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 600,
+        "y": 1020,
+        "wires": [
+            [
+                "b7061ebc.3f54d"
+            ]
+        ]
+    },
+    {
+        "id": "b7061ebc.3f54d",
+        "type": "function",
+        "z": "5bea1d99.7fbfc4",
+        "name": "LigarRele",
+        "func": "SeqS = global.get(\"SeqS\");\nif (SeqS === undefined || Seqs==99){\n    SeqS = 0;\n}\nSeqS += 1;\n\npayload=Buffer.alloc(5)       \npayload[0] = 0x01;\npayload[1] = 0x00;\npayload[2] = 0x01;\npayload[3] = SeqS;\n\npld = Buffer.from([0x0A,msg.b_id])\n\npayload[4] = pld.length;\nCompleteMsg = Buffer.concat([payload,pld],payload.length + pld.length+2)\ncs = 0;\nfor (var element of CompleteMsg){\n    cs = cs + element;\n}\nCompleteMsg[payload.length + pld.length] = cs\nCompleteMsg[payload.length + pld.length+1] = 0x04;\nmsg.payload = CompleteMsg\nreturn msg;\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 860,
+        "y": 1020,
+        "wires": [
+            [
+                "2f94dcc7.2112c4"
+            ]
+        ]
+    },
+    {
+        "id": "2f94dcc7.2112c4",
+        "type": "serial request",
+        "z": "5bea1d99.7fbfc4",
+        "name": "",
+        "serial": "c850423b.b13c1",
+        "x": 1130,
+        "y": 1020,
+        "wires": [
+            [
+                "20eb93f3.b72dec"
+            ]
+        ]
+    },
+    {
+        "id": "ebdd0d26.1458e",
+        "type": "inject",
+        "z": "5bea1d99.7fbfc4",
+        "name": "Desligar",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "b_id",
+                "v": "10",
+                "vt": "str"
+            },
+            {
+                "p": "SP1",
+                "v": "0x43",
+                "vt": "str"
+            },
+            {
+                "p": "SP2",
+                "v": "0xff",
+                "vt": "str"
+            },
+            {
+                "p": "SP3",
+                "v": "0xff",
+                "vt": "str"
+            },
+            {
+                "p": "SP4",
+                "v": "0xff",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 600,
+        "y": 1100,
+        "wires": [
+            [
+                "5f5f82ff.c946bc"
+            ]
+        ]
+    },
+    {
+        "id": "5f5f82ff.c946bc",
+        "type": "function",
+        "z": "5bea1d99.7fbfc4",
+        "name": "Desligar Rele",
+        "func": "SeqS = global.get(\"SeqS\");\nif (SeqS === undefined || Seqs==99){\n    SeqS = 0;\n}\nSeqS += 1;\n\npayload=Buffer.alloc(5)       \npayload[0] = 0x01;\npayload[1] = 0x00;\npayload[2] = 0x01;\npayload[3] = SeqS;\n\npld = Buffer.from([0x09,msg.b_id])\n\npayload[4] = pld.length;\nCompleteMsg = Buffer.concat([payload,pld],payload.length + pld.length+2)\ncs = 0;\nfor (var element of CompleteMsg){\n    cs = cs + element;\n}\nCompleteMsg[payload.length + pld.length] = cs\nCompleteMsg[payload.length + pld.length+1] = 0x04;\nmsg.payload = CompleteMsg\nreturn msg;\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 860,
+        "y": 1100,
+        "wires": [
+            [
+                "416e4fec.97c67"
+            ]
+        ]
+    },
+    {
+        "id": "416e4fec.97c67",
+        "type": "serial request",
+        "z": "5bea1d99.7fbfc4",
+        "name": "",
+        "serial": "c850423b.b13c1",
+        "x": 1130,
+        "y": 1100,
+        "wires": [
+            [
+                "20eb93f3.b72dec"
+            ]
+        ]
+    },
+    {
+        "id": "cbf323bf.6b9d2",
+        "type": "function",
+        "z": "5bea1d99.7fbfc4",
+        "name": "",
+        "func": "Message = msg.payload\nmsg.message = Message\nMcs = Message[Message.length-2]\nmsg.Mcs = Mcs\nmsg.cs = 0\nfor(var i = 0 ; i<Message.length-2 ; i++){\n    msg.cs = (msg.cs + Message[i])%256\n}\n\nif(Message[6]==0x06 && Mcs == msg.cs){\n    msg.V = Message[7];\n    msg.C = Message[8]*256+Message[9];\n    W1 = Message[10];\n    W2 = Message[11];\n    W3 = Message[12];\n    W4 = Message[13];\n    \n    Warr = [W1,W2,W3,W4]\n    var buf = new ArrayBuffer(4);\n    var view = new DataView(buf);\n    \n    \n    Warr.forEach(function (b, i) {\n        view.setUint8(i, b);\n    });\n    \n    var num = view.getFloat32(0);\n    \n    msg.W = num\n    msg.b_serial = global.get(\"serials\")[msg.b_id]\n    msg.error = false\n    return msg;\n}else{\n    msg.error = true\n    msg.topic = undefined\n    msg.payload = undefined\n    return msg\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 1140,
+        "y": 320,
+        "wires": [
+            [
+                "14675797.017668"
+            ]
+        ]
+    },
+    {
+        "id": "8dffd533.bfb828",
+        "type": "mysql",
+        "z": "5bea1d99.7fbfc4",
+        "mydb": "99ab1f4f.0e80d",
+        "name": "",
+        "x": 1730,
+        "y": 400,
+        "wires": [
+            [
+                "6139b2d7.2d4eac"
+            ]
+        ]
+    },
+    {
+        "id": "14675797.017668",
+        "type": "function",
+        "z": "5bea1d99.7fbfc4",
+        "name": "RequestDB",
+        "func": "if (msg.error === false){\n    msg.topic = \"insert into medidas(B_ID, tensao, corrente, energia,serial) values (\"+msg.b_id+\",\"+msg.V+\",\"+msg.C+\",\"+msg.W+\",'\"+msg.b_serial+\"')\"\n}else{\n    msg.topic = undefined   \n}\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 1310,
+        "y": 320,
+        "wires": [
+            [
+                "8dffd533.bfb828",
+                "6139b2d7.2d4eac"
+            ]
+        ]
+    },
+    {
+        "id": "6139b2d7.2d4eac",
+        "type": "function",
+        "z": "5bea1d99.7fbfc4",
+        "name": "END",
+        "func": "\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 2010,
+        "y": 680,
+        "wires": [
+            [
+                "cd238d68.8a365"
+            ]
+        ]
+    },
+    {
+        "id": "a28c3b27.484518",
+        "type": "function",
+        "z": "5bea1d99.7fbfc4",
+        "name": "IdenComplete",
+        "func": "message = msg.payload\nif(message[6]==0x06){\n    serials =  global.get(\"serials\")\n    if (serials===undefined){\n        serials = []\n    }\n    var serial = ''\n    serial = message[7].toString(16)\n    serial = serial + message[8].toString(16)\n    serial = serial + message[9].toString(16)\n    serial = serial + message[10].toString(16)\n    if (serial == 'ffffffff'){\n        \n    }else{\n    index = serials.indexOf(serial)\n    if (index < 0){\n        serials.push(serial)\n        global.set(\"serials\",serials)\n        msg.serials = serials\n    }\n    msg.index = index\n    msg.payload = serial\n    return msg\n    }\n\n}else{\n    msg.error =true\n    return msg\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 1320,
+        "y": 240,
+        "wires": [
+            [
+                "67a233dd.63a58c"
+            ]
+        ]
+    },
+    {
+        "id": "11906344.d76ded",
+        "type": "inject",
+        "z": "5bea1d99.7fbfc4",
+        "name": "Associar Todos SmarPlugs",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 570,
+        "y": 420,
+        "wires": [
+            [
+                "a8fb099d.8020c8"
+            ]
+        ]
+    },
+    {
+        "id": "a8fb099d.8020c8",
+        "type": "function",
+        "z": "5bea1d99.7fbfc4",
+        "name": "",
+        "func": "msg.payload = global.get(\"serials\")\nreturn msg",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 840,
+        "y": 420,
+        "wires": [
+            [
+                "f3c20d3b.d8f1e"
+            ]
+        ]
+    },
+    {
+        "id": "f3c20d3b.d8f1e",
+        "type": "split",
+        "z": "5bea1d99.7fbfc4",
+        "name": "",
+        "splt": "\\n",
+        "spltType": "str",
+        "arraySplt": 1,
+        "arraySpltType": "len",
+        "stream": false,
+        "addname": "",
+        "x": 990,
+        "y": 420,
+        "wires": [
+            [
+                "4d114eee.72d2a"
+            ]
+        ]
+    },
+    {
+        "id": "ce82a499.376728",
+        "type": "function",
+        "z": "5bea1d99.7fbfc4",
+        "name": "",
+        "func": "global.set(\"serials\",undefined)\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 780,
+        "y": 80,
+        "wires": [
+            [
+                "8a9c4609.329548"
+            ]
+        ]
+    },
+    {
+        "id": "ea7500c0.0fbc5",
+        "type": "inject",
+        "z": "5bea1d99.7fbfc4",
+        "name": "Resetar serials",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 570,
+        "y": 80,
+        "wires": [
+            [
+                "ce82a499.376728"
+            ]
+        ]
+    },
+    {
+        "id": "4d114eee.72d2a",
+        "type": "function",
+        "z": "5bea1d99.7fbfc4",
+        "name": "",
+        "func": "msg.SP1 = parseInt(msg.payload.substring(0,2),16)\nmsg.SP2 = parseInt(msg.payload.substring(2,4),16)\nmsg.SP3 = parseInt(msg.payload.substring(4,6),16)\nmsg.SP4 = parseInt(msg.payload.substring(6,8),16)\nserials = global.get(\"serials\")\nmsg.b_id = serials.indexOf(msg.payload)\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 1160,
+        "y": 420,
+        "wires": [
+            [
+                "117a3052.0b5ec"
+            ]
+        ]
+    },
+    {
+        "id": "5693dd8d.87b904",
+        "type": "complete",
+        "z": "5bea1d99.7fbfc4",
+        "name": "",
+        "scope": [
+            "7aa4f134.e3bcc"
+        ],
+        "uncaught": false,
+        "x": 710,
+        "y": 200,
+        "wires": [
+            [
+                "2754cc6a.1815c4"
+            ]
+        ]
+    },
+    {
+        "id": "62f7e6e5.2cf288",
+        "type": "inject",
+        "z": "5bea1d99.7fbfc4",
+        "name": "Print Serials",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 560,
+        "y": 140,
+        "wires": [
+            [
+                "73ca3329.c4042c"
+            ]
+        ]
+    },
+    {
+        "id": "59e358ef.068438",
+        "type": "debug",
+        "z": "5bea1d99.7fbfc4",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": true,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 820,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "73ca3329.c4042c",
+        "type": "function",
+        "z": "5bea1d99.7fbfc4",
+        "name": "",
+        "func": "msg.serials = global.get(\"serials\")\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 700,
+        "y": 140,
+        "wires": [
+            [
+                "59e358ef.068438"
+            ]
+        ]
+    },
+    {
+        "id": "20eb93f3.b72dec",
+        "type": "function",
+        "z": "5bea1d99.7fbfc4",
+        "name": "",
+        "func": "Message = msg.payload\nif (Message[6] == 0x06){\n    return msg\n    msg.error = false\n}else{\n    msg.error = true\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 1580,
+        "y": 800,
+        "wires": [
+            [
+                "6139b2d7.2d4eac"
+            ]
+        ]
+    },
+    {
+        "id": "67a233dd.63a58c",
+        "type": "function",
+        "z": "5bea1d99.7fbfc4",
+        "name": "",
+        "func": "return msg",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 1560,
+        "y": 240,
+        "wires": [
+            [
+                "6139b2d7.2d4eac",
+                "4d114eee.72d2a"
+            ]
+        ]
+    },
+    {
+        "id": "7aa4f134.e3bcc",
+        "type": "function",
+        "z": "5bea1d99.7fbfc4",
+        "name": "FImAssoc",
+        "func": "\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 1370,
+        "y": 540,
+        "wires": [
+            [
+                "20eb93f3.b72dec"
+            ]
+        ]
+    },
+    {
+        "id": "f08eb24c.3c13e",
+        "type": "inject",
+        "z": "5bea1d99.7fbfc4",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 570,
+        "y": 40,
+        "wires": [
+            [
+                "42631868.73d768"
+            ]
+        ]
+    },
+    {
+        "id": "81368f91.ccf4d",
+        "type": "debug",
+        "z": "5bea1d99.7fbfc4",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1030,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "42631868.73d768",
+        "type": "function",
+        "z": "5bea1d99.7fbfc4",
+        "name": "ResetSequencial",
+        "func": "global.set(\"SeqS\",undefined)\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 810,
+        "y": 40,
+        "wires": [
+            [
+                "81368f91.ccf4d"
+            ]
+        ]
+    },
+    {
+        "id": "8a9c4609.329548",
+        "type": "debug",
+        "z": "5bea1d99.7fbfc4",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 960,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "c850423b.b13c1",
+        "type": "serial-port",
+        "z": "",
+        "serialport": "/dev/ttyO4",
+        "serialbaud": "115200",
+        "databits": "8",
+        "parity": "none",
+        "stopbits": "1",
+        "waitfor": "0x01",
+        "dtr": "none",
+        "rts": "none",
+        "cts": "none",
+        "dsr": "none",
+        "newline": "10",
+        "bin": "bin",
+        "out": "time",
+        "addchar": "",
+        "responsetimeout": "10000"
+    },
+    {
+        "id": "99ab1f4f.0e80d",
+        "type": "MySQLdatabase",
+        "z": "",
+        "name": "mydb",
+        "host": "192.168.7.1",
+        "port": "3306",
+        "db": "exemplo",
+        "tz": ""
+    }
+]
